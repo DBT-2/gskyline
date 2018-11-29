@@ -1,8 +1,6 @@
 package alg.gskyline;
 
-import entity.DSG;
-import entity.Point;
-import entity.SkylineGroup;
+import entity.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,16 +12,7 @@ public class PtwiseGSkyline {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PtwiseGSkyline.class);
 
-    private static boolean canAdd(SkylineGroup group, Point pt) {
-        Set<Point> pts = group.pts;
-        for (Point parent : pt.parents) {
-            if (!pts.contains(parent))
-                return false;
-        }
-        return true;
-    }
-
-    private static void filterTailSet(Set<Point> tailSet, Set<Point> childrenSet, int maxLayer) {
+    private static void filterTailSet(List<Point> tailSet, Set<Point> childrenSet, int maxLayer) {
         List<Point> toRemove = new ArrayList<>();
         for (Point point : tailSet) {
             if (!childrenSet.contains(point) && !point.isSkyline()) {
@@ -44,7 +33,9 @@ public class PtwiseGSkyline {
 
         List<SkylineGroup> currGroups = new ArrayList<>();
         List<SkylineGroup> nextGroups = new ArrayList<>();
-        currGroups.add(new SkylineGroup(Collections.emptySet()));
+        //currGroups.add(new ListSkylineGroup(new ArrayList<>()));
+        currGroups.add(new TreeSkylineGroup(new GroupTreeNode(null, null)));
+        //currGroups.add(new SetSkylineGroup(Collections.emptySet()));
 
         for (int i = 1; i <= k; i++) {
             long startTime = System.currentTimeMillis();
@@ -53,7 +44,7 @@ public class PtwiseGSkyline {
                 SkylineGroup group = currGroups.get(j);
                 Set<Point> childrenSet = group.getChildrenSet();
                 int maxLayer = group.maxLayer;
-                Set<Point> tailSet= group.getTailSet(dsg);
+                List<Point> tailSet= group.getTailSet(dsg);
 
                 LOGGER.debug("Tail set before: {}", tailSet);
                 filterTailSet(tailSet, childrenSet, maxLayer);
@@ -61,6 +52,7 @@ public class PtwiseGSkyline {
 
                 pruned += addCandidate(tailSet, group, nextGroups, i, k);
 
+                group.discard();
                 group = null;
                 currGroups.set(j, null);
             }
@@ -78,17 +70,16 @@ public class PtwiseGSkyline {
         return currGroups;
     }
 
-    private static int addCandidate(Set<Point> tailSet, SkylineGroup currGroup, List<SkylineGroup> nextGroups,
+    private static int addCandidate(List<Point> tailSet, SkylineGroup currGroup, List<SkylineGroup> nextGroups,
                                     int currLevel, int maxLevel) {
         int pruned = 0;
         for(Point point : tailSet) {
-            if (!canAdd(currGroup, point)){
+            if (!currGroup.canAdd(point)){
                 pruned ++;
                 continue;
             }
-            Set<Point> newPts = new HashSet<>(currGroup.pts);
-            newPts.add(point);
-            SkylineGroup newGroup = new SkylineGroup(newPts);
+
+            SkylineGroup newGroup = currGroup.add(point);
 
             if (currLevel < maxLevel) {
                 int newMaxIndex = currGroup.maxIndex >= point.index? currGroup.maxIndex : point.index;

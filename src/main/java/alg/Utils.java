@@ -2,6 +2,7 @@ package alg;
 
 import entity.DSG;
 import entity.Point;
+import entity.SetSkylineGroup;
 import entity.SkylineGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +74,7 @@ public class Utils {
                 LOGGER.debug("UGroup of {} is {}", point, uGroup);
                 toRemove.add(point);
             } else if(uGroup.size() == k) {
-                finalGroups.add(new SkylineGroup(uGroup));
+                finalGroups.add(new SetSkylineGroup(uGroup));
                 toRemove.add(point);
             }
         }

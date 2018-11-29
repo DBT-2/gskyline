@@ -2,22 +2,15 @@ package entity;
 
 import java.util.*;
 
-public class SkylineGroup {
-    public int level;
-    public Set<Point> pts = null;
+public abstract class SkylineGroup {
     public int maxIndex = -1;
     public int maxLayer = -1;
-    private Set<Point> childrenSet = null;
-    private Set<Point> tailSet = null;
-
-    public SkylineGroup(Set<Point> pts) {
-        this.pts = pts;
-    }
-
+    protected Set<Point> childrenSet = null;
+    private List<Point> tailSet = null;
 
     public Set<Point> getChildrenSet() {
         if (childrenSet == null)
-            childrenSet = calChidrenSet();
+            childrenSet = calChiddrenSet();
         return childrenSet;
     }
 
@@ -25,28 +18,29 @@ public class SkylineGroup {
         this.childrenSet = childrenSet;
     }
 
-    private Set<Point> calChidrenSet() {
-        Set<Point> childrenSet = new HashSet<>();
-        for (Point point : pts) {
-            childrenSet.addAll(point.children);
-        }
-        return childrenSet;
-    }
+    abstract protected Set<Point> calChiddrenSet();
 
-    public Set<Point> getTailSet(DSG dsg) {
+    public List<Point> getTailSet(DSG dsg) {
         if (tailSet == null)
             tailSet = calTailSet(dsg);
         return tailSet;
     }
 
-    private Set<Point> calTailSet(DSG dsg) {
-        return new HashSet<>(dsg.tailSet(maxIndex));
+    private List<Point> calTailSet(DSG dsg) {
+        return dsg.tailSet(maxIndex);
     }
 
-    @Override
-    public String toString() {
-        return "SkylineGroup{" +
-                "pts=" + pts +
-                '}';
-    }
+    abstract public boolean canAdd(Point point);
+
+    /**
+     * add returns a skyline group that is THIS plus the given point.
+     * @param point
+     * @return
+     */
+    abstract public SkylineGroup add(Point point);
+
+    /**
+     * discard cleans containers to help gc.
+     */
+    abstract public void discard();
 }

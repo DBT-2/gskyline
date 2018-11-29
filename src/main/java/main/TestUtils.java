@@ -26,16 +26,16 @@ public class TestUtils {
         return new DSG(pair.right());
     }
 
-    public static void validateSkylineGroup(List<SkylineGroup> groups, DSG dsg) {
-        for (SkylineGroup group : groups) {
-            for (Point point : group.pts) {
-                for (Point another : dsg.pts) {
-                    if (another.dominate(point) && !group.pts.contains(another)){
-                        throw new RuntimeException(String.format("%s is not a skyline group", group));
-                    }
-                }
-            }
-        }
-
-    }
+//    public static void validateSkylineGroup(List<SkylineGroup> groups, DSG dsg) {
+//        for (SkylineGroup group : groups) {
+//            for (Point point : group.pts) {
+//                for (Point another : dsg.pts) {
+//                    if (another.dominate(point) && !group.pts.contains(another)){
+//                        throw new RuntimeException(String.format("%s is not a skyline group", group));
+//                    }
+//                }
+//            }
+//        }
+//
+//    }
 }
