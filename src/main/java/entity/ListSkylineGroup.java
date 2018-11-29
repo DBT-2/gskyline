@@ -47,4 +47,9 @@ public class ListSkylineGroup extends SkylineGroup {
     public void discard() {
         points = null;
     }
+
+    @Override
+    public int level() {
+        return points.size();
+    }
 }

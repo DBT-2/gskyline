@@ -33,11 +33,17 @@ public class TreeSkylineGroup extends SkylineGroup {
     @Override
     public SkylineGroup add(Point point) {
         GroupTreeNode newNode = TreeNodeManager.INSTANCE.allocate();
+        newNode.depth = treeNode.depth + 1;
         return new TreeSkylineGroup(newNode);
     }
 
     @Override
     public void discard() {
         TreeNodeManager.INSTANCE.free(treeNode);
+    }
+
+    @Override
+    public int level() {
+        return treeNode.depth;
     }
 }

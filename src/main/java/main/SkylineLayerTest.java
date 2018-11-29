@@ -15,11 +15,11 @@ public class SkylineLayerTest {
         int k = 4;
         List<Point> points = new ExampleDataset();
         DSG dsg = TestUtils.dsg2D(points, k);
-        List<SkylineGroup> groups = PtwiseGSkyline.run(dsg, k);
+        List<SkylineGroup> groups = PtwiseGSkyline.runBFS(dsg, k);
 
         points = new ExampleDataset();
         dsg = TestUtils.dsgMD(points, k);
-        groups = PtwiseGSkyline.run(dsg, k);
+        groups = PtwiseGSkyline.runBFS(dsg, k);
     }
 
     public static void main(String[] args) throws IOException {

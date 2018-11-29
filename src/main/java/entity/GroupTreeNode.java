@@ -3,6 +3,7 @@ package entity;
 public class GroupTreeNode implements Cloneable {
     public Point nodePoint;
     public GroupTreeNode parent;
+    public int depth = 0;
 
     public GroupTreeNode(Point point, GroupTreeNode treeNode) {
         this.nodePoint = point;
@@ -19,12 +20,5 @@ public class GroupTreeNode implements Cloneable {
         return false;
     }
 
-    public Object clone() {
-        try {
-            return super.clone();
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+
 }

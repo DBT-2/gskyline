@@ -48,7 +48,7 @@ public class PtwiseTest {
         manualSkylineLayer(dataset);
         DSG dsg = new DSG(dataset);
         int k = 4;
-        List<SkylineGroup> groups = PtwiseGSkyline.run(dsg, k);
+        List<SkylineGroup> groups = PtwiseGSkyline.runBFS(dsg, k);
         System.out.println(groups.size());
     }
 

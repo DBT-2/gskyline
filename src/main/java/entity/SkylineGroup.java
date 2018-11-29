@@ -43,4 +43,6 @@ public abstract class SkylineGroup {
      * discard cleans containers to help gc.
      */
     abstract public void discard();
+
+    abstract public int level();
 }

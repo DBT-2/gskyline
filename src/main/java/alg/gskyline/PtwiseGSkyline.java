@@ -25,7 +25,7 @@ public class PtwiseGSkyline {
         LOGGER.debug("{} points filtered", toRemove.size());
     }
 
-    public static List<SkylineGroup> run(DSG dsg, int k) {
+    public static List<SkylineGroup> runBFS(DSG dsg, int k) {
         LOGGER.info("Start {} point-wise group skyline...", k);
 
         List<SkylineGroup> finalGroups = preprocess(dsg, k);
@@ -50,7 +50,7 @@ public class PtwiseGSkyline {
                 filterTailSet(tailSet, childrenSet, maxLayer);
                 LOGGER.debug("Tail set after: {}", tailSet);
 
-                pruned += addCandidate(tailSet, group, nextGroups, i, k);
+                pruned += addCandidateBFS(tailSet, group, nextGroups, i, k);
 
                 group.discard();
                 group = null;
@@ -70,8 +70,44 @@ public class PtwiseGSkyline {
         return currGroups;
     }
 
-    private static int addCandidate(List<Point> tailSet, SkylineGroup currGroup, List<SkylineGroup> nextGroups,
-                                    int currLevel, int maxLevel) {
+    public static List<SkylineGroup> runDFS(DSG dsg, int k) {
+        LOGGER.info("Start {} point-wise group skyline...", k);
+
+        List<SkylineGroup> finalGroups = preprocess(dsg, k);
+        LOGGER.info("Found {} final groups after preprocess", finalGroups.size());
+
+        Stack<SkylineGroup> groupStack = new Stack<>();
+        //currGroups.add(new ListSkylineGroup(new ArrayList<>()));
+        groupStack.push(new TreeSkylineGroup(new GroupTreeNode(null, null)));
+        //currGroups.add(new SetSkylineGroup(Collections.emptySet()));
+
+        long startTime = System.currentTimeMillis();
+        int pruned = 0;
+        while (!groupStack.empty()) {
+            SkylineGroup group = groupStack.pop();
+            Set<Point> childrenSet = group.getChildrenSet();
+            int maxLayer = group.maxLayer;
+            List<Point> tailSet= group.getTailSet(dsg);
+
+            LOGGER.debug("Tail set before: {}", tailSet);
+            filterTailSet(tailSet, childrenSet, maxLayer);
+            LOGGER.debug("Tail set after: {}", tailSet);
+
+            pruned += addCandidateDFS(tailSet, group, groupStack, finalGroups, group.level(), k);
+
+            group.discard();
+            group = null;
+        }
+
+        long elapsed = System.currentTimeMillis() - startTime;
+        LOGGER.info("DFS skyline group consumed {}ms, found {} skyline groups, avg speed {}, pruned {}"
+                , elapsed, finalGroups.size(), finalGroups.size() / (double) elapsed, pruned);
+        LOGGER.debug("Final groups {}", finalGroups);
+        return finalGroups;
+    }
+
+    private static int addCandidateBFS(List<Point> tailSet, SkylineGroup currGroup, List<SkylineGroup> nextGroups,
+                                       int currLevel, int maxLevel) {
         int pruned = 0;
         for(Point point : tailSet) {
             if (!currGroup.canAdd(point)){
@@ -91,6 +127,33 @@ public class PtwiseGSkyline {
                 newGroup.setChildrenSet(newChildrenSet);
             }
             nextGroups.add(newGroup);
+        }
+        return pruned;
+    }
+
+    private static int addCandidateDFS(List<Point> tailSet, SkylineGroup currGroup, Stack<SkylineGroup> groupStack,
+                                       List<SkylineGroup> finalGroups, int currLevel, int maxLevel) {
+        int pruned = 0;
+        for(Point point : tailSet) {
+            if (!currGroup.canAdd(point)){
+                pruned ++;
+                continue;
+            }
+
+            SkylineGroup newGroup = currGroup.add(point);
+
+            if (currLevel + 1 < maxLevel) {
+                int newMaxIndex = currGroup.maxIndex >= point.index? currGroup.maxIndex : point.index;
+                int newMaxLayer = currGroup.maxLayer >= point.layer? currGroup.maxLayer : point.layer;
+                newGroup.maxIndex = newMaxIndex;
+                newGroup.maxLayer = newMaxLayer;
+                Set<Point> newChildrenSet = new HashSet<>(currGroup.getChildrenSet());
+                newChildrenSet.addAll(point.children);
+                newGroup.setChildrenSet(newChildrenSet);
+                groupStack.push(newGroup);
+            } else {
+                finalGroups.add(newGroup);
+            }
         }
         return pruned;
     }

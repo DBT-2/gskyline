@@ -40,4 +40,9 @@ public class SetSkylineGroup extends SkylineGroup {
         points = null;
     }
 
+    @Override
+    public int level() {
+        return points.size();
+    }
+
 }
