@@ -81,7 +81,7 @@ public class Point implements Comparable<Point>{
 
     @Override
     public int hashCode() {
-        return Objects.hash(label);
+        return label;
     }
 
     @Override

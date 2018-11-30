@@ -50,4 +50,6 @@ public abstract class SkylineGroup {
     }
 
     abstract public int level();
+
+    abstract public boolean isChildren(Point another);
 }

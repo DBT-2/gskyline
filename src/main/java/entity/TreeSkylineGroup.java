@@ -58,6 +58,17 @@ public class TreeSkylineGroup extends SkylineGroup {
     }
 
     @Override
+    public boolean isChildren(Point another) {
+        GroupTreeNode currNode = treeNode;
+        while (currNode.nodePoint != null) {
+            if(currNode.nodePoint.children.contains(another))
+                return true;
+            currNode = currNode.parent;
+        }
+        return false;
+    }
+
+    @Override
     public String toString() {
         return "{" +
                  treeNode +

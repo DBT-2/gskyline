@@ -50,14 +50,13 @@ public class ExprMain {
             case UNIT_WISE:
                 // TODO: add implementation
         }
-
+        long elapsed = System.currentTimeMillis() - startTime;
         try {
             monitorThread.interrupt();
             monitorThread.join();
         } catch (InterruptedException ignored) {
         }
 
-        long elapsed = System.currentTimeMillis() - startTime;
         System.out.println(String.format("Time consumption: %sms, # of Groups : %s", elapsed, groupList.size()));
         System.out.println(String.format("Max memory usage: %dMB", monitorThread.getMaxMemUsage() / (1024*1024)));
         //TestUtils.validateSkylineGroup(groupList, dsg);
@@ -65,8 +64,8 @@ public class ExprMain {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         List<ExprConfig> exprConfigs = new ArrayList<>();
-        exprConfigs.add(new ExprConfig("/Users/koutakashi/codes/gskyline/data/anti_2.txt", 4,
-                1000, -1, Algorithms.POINT_WISE_DFS));
+        exprConfigs.add(new ExprConfig("/Users/koutakashi/codes/gskyline/data/corr_4.txt", 4,
+                -1, -1, Algorithms.POINT_WISE_DFS));
 //        exprConfigs.add(new ExprConfig("/Users/koutakashi/codes/gskyline/data/anti_2.txt", 4,
 //                -1, -1, Algorithms.POINT_WISE_DFS));
 

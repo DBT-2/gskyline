@@ -12,32 +12,18 @@ import static alg.Utils.preprocess;
 public class PtwiseGSkyline {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PtwiseGSkyline.class);
-    private static List<Point> finalTailSet = new ArrayList<>();
-
-    private static List<Point> filterTailSet(List<Point> tailSet, Set<Point> childrenSet, int maxLayer) {
-        finalTailSet.clear();
-        for (Point point : tailSet) {
-            if (childrenSet.contains(point) || point.isSkyline()) {
-                if (point.layer - maxLayer < 2) {
-                    finalTailSet.add(point);
-                }
-            }
-        }
-        // LOGGER.debug("{} points filtered", tailSet.size() - finalTailSet.size());
-        return finalTailSet;
-    }
+    private static TailSetIterator tailSetIterator;
 
     public static List<SkylineGroup> runBFS(DSG dsg, int k, int groupLimit) {
         LOGGER.info("Start {} point-wise group skyline...", k);
+        tailSetIterator = new TailSetIterator(dsg);
 
         List<SkylineGroup> finalGroups = preprocess(dsg, k);
         LOGGER.info("Found {} final groups after preprocess", finalGroups.size());
 
         List<SkylineGroup> currGroups = new ArrayList<>();
         List<SkylineGroup> nextGroups = new ArrayList<>();
-        //currGroups.add(new ListSkylineGroup(new ArrayList<>()));
         currGroups.add(Config.groupManager.getRoot());
-        //currGroups.add(new SetSkylineGroup(Collections.emptySet()));
 
         for (int i = 1; i <= k; i++) {
             long startTime = System.currentTimeMillis();
@@ -46,7 +32,7 @@ public class PtwiseGSkyline {
                 SkylineGroup group = currGroups.get(j);
                 // LOGGER.debug("Current group: {}", group);
 
-                List<Point> tailSet = calTailSet(group, dsg);
+                Iterable<Point> tailSet = calTailSet(group, dsg);
                 pruned += addCandidateBFS(tailSet, group, nextGroups, i, k);
                 if (groupLimit > 0 && i == k && (nextGroups.size() + finalGroups.size()) >= groupLimit) {
                     break;
@@ -61,7 +47,7 @@ public class PtwiseGSkyline {
             long elapsed = System.currentTimeMillis() - startTime;
             LOGGER.info("Level {} consumed {}ms, found {} skyline groups, avg speed {}, pruned {}"
                     , i, elapsed, currGroups.size(), currGroups.size() / (double) elapsed, pruned);
-             LOGGER.debug("Level {} : {}", i, currGroups);
+            LOGGER.debug("Level {} : {}", i, currGroups);
         }
         currGroups.addAll(finalGroups);
         if (groupLimit > 0 && currGroups.size() > groupLimit) {
@@ -72,6 +58,7 @@ public class PtwiseGSkyline {
 
     public static List<SkylineGroup> runDFS(DSG dsg, int k, int groupLimit) {
         LOGGER.info("Start {} point-wise group skyline...", k);
+        tailSetIterator = new TailSetIterator(dsg);
 
         List<SkylineGroup> finalGroups = preprocess(dsg, k);
         LOGGER.info("Found {} final groups after preprocess", finalGroups.size());
@@ -84,14 +71,13 @@ public class PtwiseGSkyline {
         while (!groupStack.empty()) {
             SkylineGroup group = groupStack.pop();
 
-            List<Point> tailSet = calTailSet(group, dsg);
+            Iterable<Point> tailSet = calTailSet(group, dsg);
 
             pruned += addCandidateDFS(tailSet, group, groupStack, finalGroups, group.level(), k);
             if(groupLimit > 0 && finalGroups.size() >= groupLimit)
                 break;
 
             group.discard();
-            group = null;
         }
 
         long elapsed = System.currentTimeMillis() - startTime;
@@ -104,17 +90,12 @@ public class PtwiseGSkyline {
         return finalGroups;
     }
 
-    private static List<Point> calTailSet(SkylineGroup group, DSG dsg) {
-        Set<Point> childrenSet = group.getChildrenSet();
-        int maxLayer = group.maxLayer;
-        List<Point> tailSet= group.getTailSet(dsg);
-        // LOGGER.debug("Tail set before: {}", tailSet);
-        tailSet = filterTailSet(tailSet, childrenSet, maxLayer);
-        // LOGGER.debug("Tail set after: {}", tailSet);
-        return tailSet;
+    private static Iterable<Point> calTailSet(SkylineGroup group, DSG dsg) {
+        tailSetIterator.reset(group.maxIndex, group.maxLayer, group.getChildrenSet());
+        return tailSetIterator;
     }
 
-    private static int addCandidateBFS(List<Point> tailSet, SkylineGroup currGroup, List<SkylineGroup> nextGroups,
+    private static int addCandidateBFS(Iterable<Point> tailSet, SkylineGroup currGroup, List<SkylineGroup> nextGroups,
                                        int currLevel, int maxLevel) {
         int pruned = 0;
         for(Point point : tailSet) {
@@ -139,7 +120,7 @@ public class PtwiseGSkyline {
         return pruned;
     }
 
-    private static int addCandidateDFS(List<Point> tailSet, SkylineGroup currGroup, Stack<SkylineGroup> groupStack,
+    private static int addCandidateDFS(Iterable<Point> tailSet, SkylineGroup currGroup, Stack<SkylineGroup> groupStack,
                                        List<SkylineGroup> finalGroups, int currLevel, int maxLevel) {
         int pruned = 0;
         for(Point point : tailSet) {
@@ -164,5 +145,70 @@ public class PtwiseGSkyline {
             }
         }
         return pruned;
+    }
+
+    public static class TailSetIterator implements Iterator<Point>, Iterable<Point> {
+        private int index;
+        private List<Point> pts;
+        private int maxLayer;
+        private Set<Point> childrenSet;
+
+        private Point next = null;
+        private boolean moreNext = true;
+
+        public TailSetIterator(DSG dsg) {
+            this.pts = dsg.pts;
+        }
+
+        @Override
+        public boolean hasNext() {
+            if(!moreNext)
+                return false;
+            if(next != null)
+                return true;
+            fetch();
+            return next != null;
+        }
+
+        @Override
+        public Point next() {
+            if(!moreNext)
+                return null;
+            if(next == null)
+                fetch();
+            Point ret = next;
+            next = null;
+            return ret;
+        }
+
+        private void fetch() {
+            if (index >= pts.size()) {
+                moreNext = false;
+                return;
+            }
+            while (index < pts.size()) {
+                Point candidate = pts.get(index++);
+                if (candidate.layer - maxLayer < 2 && (childrenSet.contains(candidate) || candidate.isSkyline())) {
+                    next = candidate;
+                    break;
+                }
+            }
+            if (next == null)
+                moreNext = true;
+        }
+
+        public void reset(int index, int maxLayer, Set<Point> childrenSet) {
+            this.index = index + 1;
+            this.maxLayer = maxLayer;
+            this.childrenSet = childrenSet;
+
+            this.next = null;
+            this.moreNext = true;
+        }
+
+        @Override
+        public Iterator<Point> iterator() {
+            return this;
+        }
     }
 }

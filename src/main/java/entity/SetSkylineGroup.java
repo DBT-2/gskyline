@@ -53,6 +53,15 @@ public class SetSkylineGroup extends SkylineGroup {
         return points.size();
     }
 
+    @Override
+    public boolean isChildren(Point another) {
+        for(Point point : points) {
+            if(point.children.contains(another))
+                return true;
+        }
+        return false;
+    }
+
     public static class Manager extends GroupManager<SetSkylineGroup> {
 
         @Override
