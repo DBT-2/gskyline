@@ -12,32 +12,19 @@ import static alg.Utils.preprocess;
 public class PtwiseGSkyline {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PtwiseGSkyline.class);
+    private static List<Point> finalTailSet = new ArrayList<>();
 
     private static List<Point> filterTailSet(List<Point> tailSet, Set<Point> childrenSet, int maxLayer) {
-        List<Point> toRemove = new ArrayList<>();
+        finalTailSet.clear();
         for (Point point : tailSet) {
-            if (!childrenSet.contains(point) && !point.isSkyline()) {
-                toRemove.add(point);
-            } else if(point.layer - maxLayer >= 2) {
-                toRemove.add(point);
-            }
-        }
-        LOGGER.debug("{} points filtered", toRemove.size());
-        int i = 0, j = 0;
-        List<Point> ret = new ArrayList<>();
-        if(toRemove.size() > 0) {
-            while(i < tailSet.size()) {
-                if(j < toRemove.size() && tailSet.get(i) == toRemove.get(j)) {
-                    i ++;
-                    j ++;
-                } else {
-                    ret.add(tailSet.get(i++));
+            if (childrenSet.contains(point) || point.isSkyline()) {
+                if (point.layer - maxLayer < 2) {
+                    finalTailSet.add(point);
                 }
             }
-            return ret;
-        } else {
-            return tailSet;
         }
+        // LOGGER.debug("{} points filtered", tailSet.size() - finalTailSet.size());
+        return finalTailSet;
     }
 
     public static List<SkylineGroup> runBFS(DSG dsg, int k, int groupLimit) {
@@ -57,23 +44,14 @@ public class PtwiseGSkyline {
             int pruned = 0;
             for(int j = 0; j < currGroups.size(); j++) {
                 SkylineGroup group = currGroups.get(j);
-                LOGGER.debug("Current group: {}", group);
-                Set<Point> childrenSet = group.getChildrenSet();
-                int maxLayer = group.maxLayer;
-                List<Point> tailSet= group.getTailSet(dsg);
+                // LOGGER.debug("Current group: {}", group);
 
-                LOGGER.debug("Tail set before: {}", tailSet);
-                tailSet = filterTailSet(tailSet, childrenSet, maxLayer);
-                LOGGER.debug("Tail set after: {}", tailSet);
-
+                List<Point> tailSet = calTailSet(group, dsg);
                 pruned += addCandidateBFS(tailSet, group, nextGroups, i, k);
                 if (groupLimit > 0 && i == k && (nextGroups.size() + finalGroups.size()) >= groupLimit) {
                     break;
                 }
-
                 group.discard();
-                group = null;
-                currGroups.set(j, null);
             }
             List<SkylineGroup> temp = currGroups;
             currGroups = nextGroups;
@@ -83,7 +61,7 @@ public class PtwiseGSkyline {
             long elapsed = System.currentTimeMillis() - startTime;
             LOGGER.info("Level {} consumed {}ms, found {} skyline groups, avg speed {}, pruned {}"
                     , i, elapsed, currGroups.size(), currGroups.size() / (double) elapsed, pruned);
-            LOGGER.debug("Level {} : {}", i, currGroups);
+             LOGGER.debug("Level {} : {}", i, currGroups);
         }
         currGroups.addAll(finalGroups);
         if (groupLimit > 0 && currGroups.size() > groupLimit) {
@@ -99,21 +77,14 @@ public class PtwiseGSkyline {
         LOGGER.info("Found {} final groups after preprocess", finalGroups.size());
 
         Stack<SkylineGroup> groupStack = new Stack<>();
-        //currGroups.add(new ListSkylineGroup(new ArrayList<>()));
         groupStack.push(Config.groupManager.getRoot());
-        //currGroups.add(new SetSkylineGroup(Collections.emptySet()));
 
         long startTime = System.currentTimeMillis();
         int pruned = 0;
         while (!groupStack.empty()) {
             SkylineGroup group = groupStack.pop();
-            Set<Point> childrenSet = group.getChildrenSet();
-            int maxLayer = group.maxLayer;
-            List<Point> tailSet= group.getTailSet(dsg);
 
-            LOGGER.debug("Tail set before: {}", tailSet);
-            tailSet = filterTailSet(tailSet, childrenSet, maxLayer);
-            LOGGER.debug("Tail set after: {}", tailSet);
+            List<Point> tailSet = calTailSet(group, dsg);
 
             pruned += addCandidateDFS(tailSet, group, groupStack, finalGroups, group.level(), k);
             if(groupLimit > 0 && finalGroups.size() >= groupLimit)
@@ -131,6 +102,16 @@ public class PtwiseGSkyline {
             return finalGroups.subList(0, groupLimit);
         }
         return finalGroups;
+    }
+
+    private static List<Point> calTailSet(SkylineGroup group, DSG dsg) {
+        Set<Point> childrenSet = group.getChildrenSet();
+        int maxLayer = group.maxLayer;
+        List<Point> tailSet= group.getTailSet(dsg);
+        // LOGGER.debug("Tail set before: {}", tailSet);
+        tailSet = filterTailSet(tailSet, childrenSet, maxLayer);
+        // LOGGER.debug("Tail set after: {}", tailSet);
+        return tailSet;
     }
 
     private static int addCandidateBFS(List<Point> tailSet, SkylineGroup currGroup, List<SkylineGroup> nextGroups,

@@ -65,10 +65,10 @@ public class ExprMain {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         List<ExprConfig> exprConfigs = new ArrayList<>();
-        exprConfigs.add(new ExprConfig("/Users/koutakashi/codes/gskyline/data/anti_2.txt", 5,
-                -1, -1, Algorithms.POINT_WISE_BFS));
-        exprConfigs.add(new ExprConfig("/Users/koutakashi/codes/gskyline/data/anti_2.txt", 5,
-                -1, -1, Algorithms.POINT_WISE_DFS));
+        exprConfigs.add(new ExprConfig("/Users/koutakashi/codes/gskyline/data/anti_2.txt", 4,
+                1000, -1, Algorithms.POINT_WISE_DFS));
+//        exprConfigs.add(new ExprConfig("/Users/koutakashi/codes/gskyline/data/anti_2.txt", 4,
+//                -1, -1, Algorithms.POINT_WISE_DFS));
 
         for (ExprConfig config : exprConfigs) {
             long timeOut = 5 * 60 * 1000; // in ms

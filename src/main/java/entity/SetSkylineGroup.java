@@ -35,6 +35,7 @@ public class SetSkylineGroup extends SkylineGroup {
     @Override
     public SkylineGroup add(Point point) {
         Set<Point> newPoints = new HashSet<>(points);
+        newPoints.add(point);
         SetSkylineGroup newGroup = (SetSkylineGroup) Config.groupManager.allocate();
         newGroup.points = newPoints;
         return newGroup;
