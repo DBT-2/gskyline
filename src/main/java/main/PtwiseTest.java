@@ -7,6 +7,7 @@ import entity.DSG;
 import entity.Point;
 import entity.SkylineGroup;
 
+import java.util.Collection;
 import java.util.List;
 
 public class PtwiseTest {
@@ -46,9 +47,9 @@ public class PtwiseTest {
     public void run() {
         Dataset dataset = new ExampleDataset();
         manualSkylineLayer(dataset);
-        DSG dsg = new DSG(dataset);
+        DSG dsg = new DSG(dataset, null);
         int k = 4;
-        List<SkylineGroup> groups = PtwiseGSkyline.runBFS(dsg, k, -1);
+        Collection<SkylineGroup> groups = PtwiseGSkyline.runBFS(dsg, k, -1);
         System.out.println(groups.size());
     }
 

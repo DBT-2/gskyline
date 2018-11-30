@@ -4,9 +4,11 @@ import java.util.List;
 
 public class DSG {
     public List<Point> pts;
+    public List<Point>[] layers;
 
-    public DSG(List<Point> points) {
+    public DSG(List<Point> points, List<Point>[] layers) {
         this.pts = points;
+        this.layers = layers;
     }
 
     /**

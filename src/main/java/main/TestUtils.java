@@ -17,13 +17,13 @@ public class TestUtils {
         pointList = SkylineLayer2D.Run(pointList, k);
         List<Point>[] layers = splitLayer(pointList, k);
         calParentChildren(layers, k);
-        return new DSG(pointList);
+        return new DSG(pointList, layers);
     }
 
     public static DSG dsgMD(List<Point> points, int k) {
         Pair<List<Point>[], List<Point>> pair = SkylineLayerMD.run(points, k);
         calParentChildren(pair.left(), k);
-        return new DSG(pair.right());
+        return new DSG(pair.right(), pair.left());
     }
 
 //    public static void validateSkylineGroup(List<SkylineGroup> groups, DSG dsg) {

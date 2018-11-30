@@ -14,11 +14,11 @@ public class PtwiseGSkyline {
     private static final Logger LOGGER = LoggerFactory.getLogger(PtwiseGSkyline.class);
     private static TailSetIterator tailSetIterator;
 
-    public static List<SkylineGroup> runBFS(DSG dsg, int k, int groupLimit) {
+    public static Collection<SkylineGroup> runBFS(DSG dsg, int k, int groupLimit) {
         LOGGER.info("Start {} point-wise group skyline...", k);
         tailSetIterator = new TailSetIterator(dsg);
 
-        List<SkylineGroup> finalGroups = preprocess(dsg, k);
+        Collection<SkylineGroup> finalGroups = preprocess(dsg, k);
         LOGGER.info("Found {} final groups after preprocess", finalGroups.size());
 
         List<SkylineGroup> currGroups = new ArrayList<>();
@@ -49,18 +49,15 @@ public class PtwiseGSkyline {
                     , i, elapsed, currGroups.size(), currGroups.size() / (double) elapsed, pruned);
             LOGGER.debug("Level {} : {}", i, currGroups);
         }
-        currGroups.addAll(finalGroups);
-        if (groupLimit > 0 && currGroups.size() > groupLimit) {
-            return currGroups.subList(0, groupLimit);
-        }
-        return currGroups;
+        finalGroups.addAll(currGroups);
+        return finalGroups;
     }
 
-    public static List<SkylineGroup> runDFS(DSG dsg, int k, int groupLimit) {
+    public static Collection<SkylineGroup> runDFS(DSG dsg, int k, int groupLimit) {
         LOGGER.info("Start {} point-wise group skyline...", k);
         tailSetIterator = new TailSetIterator(dsg);
 
-        List<SkylineGroup> finalGroups = preprocess(dsg, k);
+        Collection<SkylineGroup> finalGroups = preprocess(dsg, k);
         LOGGER.info("Found {} final groups after preprocess", finalGroups.size());
 
         Stack<SkylineGroup> groupStack = new Stack<>();
@@ -85,7 +82,7 @@ public class PtwiseGSkyline {
                 , elapsed, finalGroups.size(), finalGroups.size() / (double) elapsed, pruned);
         LOGGER.debug("Final groups {}", finalGroups);
         if (groupLimit > 0 && finalGroups.size() > groupLimit) {
-            return finalGroups.subList(0, groupLimit);
+            return finalGroups;
         }
         return finalGroups;
     }
@@ -121,7 +118,7 @@ public class PtwiseGSkyline {
     }
 
     private static int addCandidateDFS(Iterable<Point> tailSet, SkylineGroup currGroup, Stack<SkylineGroup> groupStack,
-                                       List<SkylineGroup> finalGroups, int currLevel, int maxLevel) {
+                                       Collection<SkylineGroup> finalGroups, int currLevel, int maxLevel) {
         int pruned = 0;
         for(Point point : tailSet) {
             if (!currGroup.canAdd(point)){

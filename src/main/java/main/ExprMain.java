@@ -2,14 +2,17 @@ package main;
 
 import alg.Algorithms;
 import alg.gskyline.PtwiseGSkyline;
+import alg.gskyline.UnitGSkyline;
 import conf.Config;
 import dataset.CSVDataset;
 import dataset.Dataset;
 import entity.DSG;
 import entity.SkylineGroup;
+import entity.UnitGroup;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class ExprMain {
@@ -39,16 +42,21 @@ public class ExprMain {
             dsg = TestUtils.dsg2D(dataset, k);
         }
 
-        List<SkylineGroup> groupList = null;
+        Collection<SkylineGroup> groupList = null;
+        List<List<Integer>> unitGroups = null;
+        int size = 0;
         switch (alg) {
             case POINT_WISE_BFS:
                 groupList = PtwiseGSkyline.runBFS(dsg, k, groupLimit);
+                size = groupList.size();
                 break;
             case POINT_WISE_DFS:
                 groupList = PtwiseGSkyline.runDFS(dsg, k, groupLimit);
+                size = groupList.size();
                 break;
             case UNIT_WISE:
-                // TODO: add implementation
+                unitGroups = UnitGSkyline.unitGroupWise(dsg.layers, k);
+                size = unitGroups.size();
         }
         long elapsed = System.currentTimeMillis() - startTime;
         try {
@@ -57,14 +65,14 @@ public class ExprMain {
         } catch (InterruptedException ignored) {
         }
 
-        System.out.println(String.format("Time consumption: %sms, # of Groups : %s", elapsed, groupList.size()));
+        System.out.println(String.format("Time consumption: %sms, # of Groups : %s", elapsed, size));
         System.out.println(String.format("Max memory usage: %dMB", monitorThread.getMaxMemUsage() / (1024*1024)));
         //TestUtils.validateSkylineGroup(groupList, dsg);
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
         List<ExprConfig> exprConfigs = new ArrayList<>();
-        exprConfigs.add(new ExprConfig("/Users/koutakashi/codes/gskyline/data/corr_4.txt", 4,
+        exprConfigs.add(new ExprConfig("/Users/koutakashi/codes/gskyline/data/anti_2.txt", 4,
                 -1, -1, Algorithms.POINT_WISE_DFS));
 //        exprConfigs.add(new ExprConfig("/Users/koutakashi/codes/gskyline/data/anti_2.txt", 4,
 //                -1, -1, Algorithms.POINT_WISE_DFS));

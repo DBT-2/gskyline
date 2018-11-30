@@ -7,9 +7,7 @@ import entity.SkylineGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Utils {
     private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
@@ -63,11 +61,11 @@ public class Utils {
         }
     }
 
-    public static List<SkylineGroup> preprocess(DSG dsg, int k) {
+    public static Collection<SkylineGroup> preprocess(DSG dsg, int k) {
         long startTime = System.currentTimeMillis();
         List<Point> pts = dsg.pts;
         List<Point> toRemove = new ArrayList<>();
-        List<SkylineGroup> finalGroups = new ArrayList<>();
+        Collection<SkylineGroup> finalGroups = new ArrayList<>();
         for(Point point : pts) {
             Set<Point> uGroup = point.getUnitGroup();
             if(uGroup.size() > k) {
