@@ -46,4 +46,13 @@ public abstract class GroupManager<T extends SkylineGroup> {
         if(obj != root)
             nodeQueue.add(obj);
     }
+
+    public void init() {
+        nodeQueue.clear();
+        for (int i = 0; i < INITIAL_CAPACITY; i ++) {
+            nodeQueue.add(createSkylineGroup());
+        }
+        root = null;
+    }
+
 }

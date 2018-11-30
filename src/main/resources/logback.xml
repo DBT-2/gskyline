@@ -94,7 +94,7 @@
 
 	<!--<logger name="cn.edu.tsinghua.tsfile.timeseries.write.series.ChunkWriterImpl level="debug" />-->
 
-	<root level="info">
+	<root level="error">
 		<!--<appender-ref ref="FILEDEBUG" />-->
 		<!--<appender-ref ref="FILEINFO" />-->
 		<!--<appender-ref ref="FILEWARN" />-->

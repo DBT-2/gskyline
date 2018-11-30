@@ -25,7 +25,7 @@ public class CSVDataset extends ArrayList<Point> implements Dataset {
                 }
                 Point point = new Point(doubleFileds, cnt++);
                 this.add(point);
-                if(cnt >= limit)
+                if(limit > 0 && cnt >= limit)
                     break;
             }
             this.sort(Point::compareTo);
