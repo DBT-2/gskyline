@@ -42,7 +42,12 @@ public abstract class SkylineGroup {
     /**
      * discard cleans containers to help gc.
      */
-    abstract public void discard();
+    public void discard() {
+        maxLayer = -1;
+        maxIndex = -1;
+        childrenSet = null;
+        tailSet = null;
+    }
 
     abstract public int level();
 }

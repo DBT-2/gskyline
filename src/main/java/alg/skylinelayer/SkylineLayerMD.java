@@ -45,7 +45,7 @@ public class SkylineLayerMD {
                 current.layer = k;
             }
         }
-        LOGGER.info("2D skyline layer consumed: {}ms", System.currentTimeMillis() - startTime);
+        LOGGER.info("MD skyline layer consumed: {}ms", System.currentTimeMillis() - startTime);
 
         List<Point> newPts = new ArrayList<>();
         for (List<Point> layer : layers) {

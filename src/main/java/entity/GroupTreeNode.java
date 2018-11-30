@@ -20,5 +20,14 @@ public class GroupTreeNode implements Cloneable {
         return false;
     }
 
-
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        GroupTreeNode currNode = this;
+        while (currNode.nodePoint != null) {
+            builder.append(currNode.nodePoint.toString()).append(",");
+            currNode = currNode.parent;
+        }
+        return  builder.toString();
+    }
 }

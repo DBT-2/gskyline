@@ -1,11 +1,15 @@
 package entity;
 
+import conf.Config;
+
 import java.util.HashSet;
 import java.util.Set;
 
 public class TreeSkylineGroup extends SkylineGroup {
 
     public GroupTreeNode treeNode = null;
+
+    public TreeSkylineGroup(){}
 
     public TreeSkylineGroup(GroupTreeNode node) {
         this.treeNode = node;
@@ -32,18 +36,44 @@ public class TreeSkylineGroup extends SkylineGroup {
 
     @Override
     public SkylineGroup add(Point point) {
-        GroupTreeNode newNode = TreeNodeManager.INSTANCE.allocate();
+        GroupTreeNode newNode = new GroupTreeNode(point, this.treeNode);
+        newNode.parent = this.treeNode;
+        newNode.nodePoint = point;
         newNode.depth = treeNode.depth + 1;
-        return new TreeSkylineGroup(newNode);
+        TreeSkylineGroup newGroup = (TreeSkylineGroup) Config.groupManager.allocate();
+        newGroup.treeNode = newNode;
+        return newGroup;
     }
 
     @Override
     public void discard() {
-        TreeNodeManager.INSTANCE.free(treeNode);
+        super.discard();
+        treeNode = null;
+        Config.groupManager.free(this);
     }
 
     @Override
     public int level() {
         return treeNode.depth;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                 treeNode +
+                '}';
+    }
+
+    public static class Manager extends GroupManager<TreeSkylineGroup> {
+
+        @Override
+        protected TreeSkylineGroup createSkylineGroup() {
+            return new TreeSkylineGroup();
+        }
+
+        @Override
+        public TreeSkylineGroup generateRoot() {
+            return new TreeSkylineGroup(new GroupTreeNode(null, null));
+        }
     }
 }

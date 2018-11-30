@@ -1,9 +1,8 @@
 package entity;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import conf.Config;
+
+import java.util.*;
 
 public class ListSkylineGroup extends SkylineGroup {
     public List<Point> points;
@@ -36,7 +35,7 @@ public class ListSkylineGroup extends SkylineGroup {
 
     @Override
     public SkylineGroup add(Point point) {
-        ListSkylineGroup skylineGroup = new ListSkylineGroup();
+        ListSkylineGroup skylineGroup = (ListSkylineGroup) Config.groupManager.allocate();
         List<Point> newPoints = new ArrayList<>(points);
         newPoints.add(point);
         skylineGroup.points = newPoints;
@@ -45,11 +44,26 @@ public class ListSkylineGroup extends SkylineGroup {
 
     @Override
     public void discard() {
+        super.discard();
         points = null;
+        Config.groupManager.free(this);
     }
 
     @Override
     public int level() {
         return points.size();
+    }
+
+    public static class Manager extends GroupManager<ListSkylineGroup> {
+
+        @Override
+        protected ListSkylineGroup createSkylineGroup() {
+            return new ListSkylineGroup();
+        }
+
+        @Override
+        public ListSkylineGroup generateRoot() {
+            return new ListSkylineGroup(new ArrayList<>());
+        }
     }
 }
